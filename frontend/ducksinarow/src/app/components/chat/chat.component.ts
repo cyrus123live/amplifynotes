@@ -13,7 +13,7 @@ import { NgFor } from '@angular/common';
   selector: 'app-chat',
   imports: [FormsModule, NgFor],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.sass'
+  styleUrl: './chat.component.css'
 })
 export class ChatComponent {
   message = "";

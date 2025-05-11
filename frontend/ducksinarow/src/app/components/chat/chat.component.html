@@ -1,16 +1,22 @@
-<button (click)="newChat()">New Chat</button>
-<form (ngSubmit)="submitMessage()">
-    <div>
-        <label for="message">Message:</label>
-        <input type="message" id="message" name="message" [(ngModel)]="message" required />
+<div class="router-component-outer  chat-outer">
+    <div class="section left-section">
+        <button (click)="newChat()">New Chat</button>
+        <div *ngFor="let chat of chats">
+            <p (click)="selectChat(chat.id)">{{ chat.title }}</p>
+        </div>
     </div>
-    <button type="submit">Send</button>
-</form>
 
-<div *ngFor="let chat of chats">
-    <p (click)="selectChat(chat.id)">{{ chat.title }}</p>
-</div>
-
-<div *ngFor="let message of chat">
-    <p>{{ message.text }}</p>
+    <div class="section right-section">
+        <div class="messages">
+            <div *ngFor="let message of chat">
+                <p>{{ message.text }}</p>
+            </div>
+        </div>
+        <form class="message-form" (ngSubmit)="submitMessage()">
+            <div>
+                <input type="message" id="message" name="message" [(ngModel)]="message" required placeholder="Send a message..."/>
+            </div>
+            <button type="submit" style="display: none;">Send</button>
+        </form>
+    </div>
 </div>

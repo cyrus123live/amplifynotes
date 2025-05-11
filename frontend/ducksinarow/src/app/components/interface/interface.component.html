@@ -1,6 +1,8 @@
-<section>
-    <app-sidebar *ngIf="route !== 'login'"></app-sidebar>
-</section>
-<section>
-    <router-outlet></router-outlet>
-</section>
+<div class='interface-outer'>
+    <div class="sidebar-outer">
+        <app-sidebar *ngIf="route !== 'login'"></app-sidebar>
+    </div>
+    <div class="router-outer">
+        <router-outlet></router-outlet>
+    </div>
+</div>

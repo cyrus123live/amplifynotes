@@ -5,7 +5,7 @@ import { ApiServiceService } from '../../api-service.service';
   selector: 'app-sidebar',
   imports: [],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.sass'
+  styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
   constructor(private apiService: ApiServiceService) {
