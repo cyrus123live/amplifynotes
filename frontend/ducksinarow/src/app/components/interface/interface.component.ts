@@ -1,56 +1,29 @@
 import { Component } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { Note } from '../../interfaces/note';
-import { ApiServiceService } from '../../api-service.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { SidebarComponent } from '../sidebar/sidebar.component';
+import { NotesComponent } from '../notes/notes.component';
+import { RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-interface',
   standalone: true,
-  imports: [NgFor, CommonModule, FormsModule],
+  imports: [NgFor, CommonModule, FormsModule, NotesComponent, SidebarComponent, RouterOutlet],
   templateUrl: './interface.component.html',
   styleUrl: './interface.component.css'
 })
 export class InterfaceComponent {
-  noteList: Note[] = [];
-  title = "";
-  content = "";
-  isLoading = true;
-    
-  constructor(private apiService: ApiServiceService) {
-    this.loadNotes();
-  }
+  route: string = '';
 
-  async loadNotes() {
-    try {
-      this.isLoading = true;
-      this.noteList = await this.apiService.getNotes();
-    } catch (error) {
-      // Errors are now handled in the service, no need to do anything here
-    } finally {
-      this.isLoading = false;
-    }
-  }
+  constructor(private router: Router) {}
 
-  async addNote() {
-    if (!this.title && !this.content) return;
-    
-    const newNote: Note = {
-      title: this.title,
-      content: this.content
-    };
-    
-    try {
-      this.noteList = await this.apiService.addNote(newNote);
-      this.title = '';
-      this.content = '';
-    } catch (error) {
-      // Errors are now handled in the service, no need to do anything here
-    }
-  }
-
-  logout() {
-    this.apiService.logout();
+  ngOnInit(): void {
+    // Subscribe to route changes to update the `route` property
+    this.router.events.subscribe(() => {
+      this.route = this.router.url.split('/')[1]; // Extract the first segment of the route
+    });
   }
 }

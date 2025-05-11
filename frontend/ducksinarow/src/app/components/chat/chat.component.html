@@ -1,0 +1,16 @@
+<button (click)="newChat()">New Chat</button>
+<form (ngSubmit)="submitMessage()">
+    <div>
+        <label for="message">Message:</label>
+        <input type="message" id="message" name="message" [(ngModel)]="message" required />
+    </div>
+    <button type="submit">Send</button>
+</form>
+
+<div *ngFor="let chat of chats">
+    <p (click)="selectChat(chat.id)">{{ chat.title }}</p>
+</div>
+
+<div *ngFor="let message of chat">
+    <p>{{ message.text }}</p>
+</div>

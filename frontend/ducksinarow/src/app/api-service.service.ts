@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Note } from './interfaces/note';
+import { Chat } from './interfaces/chat';
+import { Message } from './interfaces/message';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -41,6 +43,78 @@ export class ApiServiceService {
     });
   }
 
+  async newChat(): Promise<Chat[]>  {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/new_chat`, {}, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getChats();
+    } catch (error) {
+      console.error(error);
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async getChats(): Promise<Chat[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    try {
+      return await firstValueFrom(
+        this.http.get<Chat[]>(`http://localhost:5000/chats`, {
+          headers: this.getHeaders()
+        })
+      );
+    } catch (error) {
+      console.error(error)
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async getChat(chatId: number): Promise<Message[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      return await firstValueFrom(
+        this.http.get<Message[]>(`http://localhost:5000/chat/${chatId}`, {
+          headers: this.getHeaders()
+        })
+      );
+    } catch (error) {
+      console.error(error)
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async sendMessage(chatId: number, message: Message): Promise<Message[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/chat/${chatId}`, message, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getChat(chatId);
+    } catch (error) {
+      console.error(error);
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
   async getNotes(): Promise<Note[]> {
     if (!this.isAuthenticated()) {
       return [];
@@ -53,11 +127,7 @@ export class ApiServiceService {
         })
       );
     } catch (error) {
-      console.error('Failed to fetch notes:', error);
-      if (error instanceof Error && error.message.includes('401')) {
-        this.router.navigate(['/login']);
-        return [];
-      }
+      this.router.navigate(['/login']);
       return [];
     }
   }
@@ -76,10 +146,7 @@ export class ApiServiceService {
       return this.getNotes();
     } catch (error) {
       console.error('Failed to add note:', error);
-      // If unauthorized, redirect silently
-      if (error instanceof Error && error.message.includes('401')) {
-        this.router.navigate(['/login']);
-      }
+      this.router.navigate(['/login']);
       return [];
     }
   }
