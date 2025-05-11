@@ -1,4 +1,7 @@
-<p>interface works!</p>
+<div>
+  <button (click)="logout()" style="float: right; margin: 10px;">Logout</button>
+  <h1>My Notes</h1>
+</div>
 
 <form (ngSubmit)="addNote()">
     <div>
@@ -12,9 +15,12 @@
     <button type="submit">Submit</button>
 </form>
 
-<ul>
+<div *ngIf="isLoading">Loading...</div>
+
+<ul *ngIf="!isLoading">
     <li *ngFor="let note of noteList">
         <h3>{{ note.title || 'Untitled' }}</h3>
         <p>{{ note.content }}</p>
     </li>
+    <li *ngIf="noteList.length === 0">No notes found. Create one!</li>
 </ul>

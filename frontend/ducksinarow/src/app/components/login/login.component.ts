@@ -29,13 +29,11 @@ export class LoginComponent {
 
   login() {
     if (this.email && this.password) {
-      console.log('Logging in with', this.email, this.password);
       this.http.post('http://localhost:5000/login', {
         username: this.email,
         password: this.password,
       }).subscribe({
         next: (data: any) => {
-          console.log('Login response:', data);
           if (data.access_token) {
             this.setToken(data.access_token);
             this.router.navigate(['/']);
