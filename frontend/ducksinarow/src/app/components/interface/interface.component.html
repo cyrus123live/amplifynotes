@@ -1,0 +1,20 @@
+<p>interface works!</p>
+
+<form (ngSubmit)="addNote()">
+    <div>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" [(ngModel)]="title" required />
+    </div>
+    <div>
+        <label for="content">Content:</label>
+        <input type="text" id="content" name="content" [(ngModel)]="content" required />
+    </div>
+    <button type="submit">Submit</button>
+</form>
+
+<ul>
+    <li *ngFor="let note of noteList">
+        <h3>{{ note.title || 'Untitled' }}</h3>
+        <p>{{ note.content }}</p>
+    </li>
+</ul>
