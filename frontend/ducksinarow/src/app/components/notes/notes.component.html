@@ -1,23 +1,24 @@
-<h1>My Notes</h1>
 
-<form (ngSubmit)="addNote()">
-    <div>
-        <label for="title">Title:</label>
-        <input type="text" id="title" name="title" [(ngModel)]="title" required />
+<div class="router-component-outer  notes-outer">
+    <div class="section left-section">
+        <form (ngSubmit)="addNote()">
+            <div>
+                <!-- <label for="title">Title:</label> -->
+                <input type="text" id="title" name="title" placeholder="New Note..." [(ngModel)]="new_title" required />
+            </div>
+            <!-- <div>
+                <label for="content">Content:</label>
+                <input type="text" id="content" name="content" [(ngModel)]="content" required />
+            </div> -->
+            <button style="display: none;" type="submit">Submit</button>
+        </form>
+        <button (click)="selectNote(note)" *ngFor="let note of noteList">{{ note.title || 'Untitled' }}</button>
     </div>
-    <div>
-        <label for="content">Content:</label>
-        <input type="text" id="content" name="content" [(ngModel)]="content" required />
+
+    <div class="section right-section">
+        <form class="note-content-form">
+            <textarea class="header">{{title}}</textarea>
+            <textarea class="content">{{content}}</textarea>
+        </form>
     </div>
-    <button type="submit">Submit</button>
-</form>
-
-<div *ngIf="isLoading">Loading...</div>
-
-<ul *ngIf="!isLoading">
-    <li *ngFor="let note of noteList">
-        <h3>{{ note.title || 'Untitled' }}</h3>
-        <p>{{ note.content }}</p>
-    </li>
-    <li *ngIf="noteList.length === 0">No notes found. Create one!</li>
-</ul>
+</div>

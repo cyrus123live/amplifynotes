@@ -25,6 +25,13 @@ export class ChatComponent {
     this.getChats()
   }
 
+  scrollMessages() {
+    const messagesDiv = document.querySelector('.messages');
+      if (messagesDiv) {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+  }
+
   async selectChat(id?: number) {
     this.chatId = id || 1;
     this.getChat()
@@ -38,12 +45,14 @@ export class ChatComponent {
     };
     try {
       this.chat = await this.apiService.sendMessage(this.chatId, new_message);
+      setTimeout(() => this.scrollMessages(), 0);
     } catch (error) {
     }
   }
   async getChat() {
     try {
       this.chat = await this.apiService.getChat(this.chatId);
+      setTimeout(() => this.scrollMessages(), 0);
     } catch (error) {
 
     }

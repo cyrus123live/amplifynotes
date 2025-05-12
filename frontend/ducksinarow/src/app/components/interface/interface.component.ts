@@ -1,17 +1,14 @@
 import { Component } from '@angular/core';
-import { NgFor } from '@angular/common';
-import { Note } from '../../interfaces/note';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { NotesComponent } from '../notes/notes.component';
 import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-interface',
   standalone: true,
-  imports: [NgFor, CommonModule, FormsModule, NotesComponent, SidebarComponent, RouterOutlet],
+  imports: [CommonModule, FormsModule, SidebarComponent, RouterOutlet],
   templateUrl: './interface.component.html',
   styleUrl: './interface.component.css'
 })

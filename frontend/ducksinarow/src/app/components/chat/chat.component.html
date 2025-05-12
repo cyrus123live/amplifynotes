@@ -1,9 +1,9 @@
 <div class="router-component-outer  chat-outer">
     <div class="section left-section">
         <button (click)="newChat()">New Chat</button>
-        <div *ngFor="let chat of chats">
-            <p (click)="selectChat(chat.id)">{{ chat.title }}</p>
-        </div>
+        <button *ngFor="let chat of chats" (click)="selectChat(chat.id)">
+            <p>{{ chat.title }}</p>
+        </button>
     </div>
 
     <div class="section right-section">
