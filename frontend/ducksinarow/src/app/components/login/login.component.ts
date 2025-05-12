@@ -36,7 +36,7 @@ export class LoginComponent {
         next: (data: any) => {
           if (data.access_token) {
             this.setToken(data.access_token);
-            this.router.navigate(['/']);
+            this.router.navigate(['/app']);
           } else {
             console.error('No access token in response:', data);
           }

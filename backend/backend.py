@@ -100,6 +100,20 @@ def notes(tasks):
     notes_list = [{'id': row[0], 'task': row[1], 'title': row[2], 'content': row[3]} for row in notes]
     return jsonify(notes_list)
 
+@app.route('/items/update/<id>', methods=["GET", "POST"])
+@jwt_required()
+def update_note(id):
+    conn = sql.connect('app.db')
+    if request.method == 'POST':
+        data = request.get_json()
+        # First get the current task status
+        current_note = conn.execute('SELECT task FROM items WHERE id = ?', (id,)).fetchone()
+        if current_note:
+            conn.execute("UPDATE items SET title = ?, content = ? WHERE id = ?", 
+                        (data['title'], data['content'], id))
+            conn.commit()
+    return []
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)

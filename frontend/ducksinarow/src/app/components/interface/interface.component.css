@@ -1,0 +1,62 @@
+.interface {
+  display: flex;
+  width: 100%;
+}
+.interface-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+.sidebar-outer {
+  border-right: 1px solid black;
+  padding: 20px;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto;
+  width: 200px;
+}
+.chat-list {
+  overflow-y: scroll;
+}
+.note-list {
+  overflow-y: scroll;
+}
+.chat-outer {
+  position: relative;
+  height: 100vh;
+  display: grid;
+  
+  padding: 20px;
+  border-right: 1px solid black;
+}
+.messages {
+  overflow-y: scroll;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100% - 60px);
+}
+.message-form {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 40px);
+  margin: 20px;
+}
+.user-message {
+  align-self: flex-end;
+
+}
+.bot-message {
+  align-self: flex-start;
+}
+.notes-outer {
+  padding: 20px;
+}
+.header {
+  font-size: 1.8em;
+}
+.content {
+  width: 100%;
+  height: 80vh;
+}

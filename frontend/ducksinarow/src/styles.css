@@ -1,6 +1,8 @@
 body {
     background-color: #1C1C1C;
     overflow-y: hidden;
+    padding: 0px;
+    margin: 0px;
 }
 * {
     color: white;
@@ -45,39 +47,4 @@ textarea {
 }
 textarea:focus {
     outline: none;
-}
-.router-component-outer {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    height: 100%;
-}
-.section {
-    padding: 20px;
-}
-.left-section {
-    border-right: 1px solid black;
-    height: 100%;
-    overflow-y: scroll;
-}
-.interface-outer {
-    display: grid;
-    grid-template-columns: 1fr 6fr;
-    height: 100vh;
-}
-
-.sidebar-outer {
-    height: 100%;
-    border-right: 2px solid black;
-    padding: 20px;
-}
-
-.router-outer {
-    height: 100%;
-    overflow-y: scroll;
-    box-sizing: border-box;
-}
-
-.header {
-    font-size: 1.5rem;
-    font-weight: bold;
 }

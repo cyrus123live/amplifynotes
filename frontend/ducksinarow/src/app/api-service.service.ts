@@ -78,7 +78,7 @@ export class ApiServiceService {
     }
   }
 
-  async getChat(chatId: number): Promise<Message[]> {
+  async getMessages(chatId: number): Promise<Message[]> {
     if (!this.isAuthenticated()) {
       return [];
     }
@@ -107,7 +107,7 @@ export class ApiServiceService {
           headers: this.getHeaders()
         })
       );
-      return this.getChat(chatId);
+      return this.getMessages(chatId);
     } catch (error) {
       console.error(error);
       this.router.navigate(['/login']);
@@ -146,6 +146,25 @@ export class ApiServiceService {
       return this.getNotes();
     } catch (error) {
       console.error('Failed to add note:', error);
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async updateNote(id: number | undefined, val: {title: string, content: string}): Promise<Note[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/items/update/${id}`, val, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getNotes();
+    } catch (error) {
+      console.error('Failed to update note:', error);
       this.router.navigate(['/login']);
       return [];
     }
