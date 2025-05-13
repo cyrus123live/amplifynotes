@@ -15,6 +15,7 @@
     </div>
     <div class="interface-inner">
         <div class="chat-outer">
+            <button (click)="deleteNote(note.id)">Delete</button>
             <textarea class="header" (keydown)="disableEnter($event)">{{chat.title}}</textarea>
             <div class="messages">
                 <div [class]="message.user ? 'user-message' : 'bot-message'" *ngFor="let message of messages">{{ message.text }}</div>
@@ -28,6 +29,7 @@
         </div>
         <div class="notes-outer">
             <form class="note-content-form" [formGroup]="note_form">
+                <button (click)="deleteNote(note.id)">Delete</button>
                 <textarea class="header title" formControlName="title" (keydown)="disableEnter($event)">{{note.title}}</textarea>
                 <textarea class="content" formControlName="content">{{note.content}}</textarea>
             </form>

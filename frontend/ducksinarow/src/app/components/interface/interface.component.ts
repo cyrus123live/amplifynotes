@@ -122,6 +122,14 @@ export class InterfaceComponent {
     }, { emitEvent: false }); // Prevent triggering valueChanges
   }
 
+  async deleteNote(id: number | undefined) {
+    try {
+      this.noteList = await this.apiService.deleteNote(id? id: 1);
+      this.selectNote(this.noteList[0]);
+    } catch (error) {
+    }
+  }
+
   // Chat --------------------
 
   scrollMessages() {
@@ -167,6 +175,14 @@ export class InterfaceComponent {
   async getChats() {
     try {
       this.chats = await this.apiService.getChats();
+    } catch (error) {
+    }
+  }
+
+  async deleteChat(id: number | undefined) {
+    try {
+      this.chats = await this.apiService.deleteChat(id? id: 1);
+      this.chat = this.chats[0];
     } catch (error) {
     }
   }

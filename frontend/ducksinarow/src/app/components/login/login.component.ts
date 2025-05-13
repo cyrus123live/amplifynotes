@@ -29,7 +29,7 @@ export class LoginComponent {
 
   login() {
     if (this.email && this.password) {
-      this.http.post('http://localhost:5000/login', {
+      this.http.post('http://localhost:5000/api/login', {
         username: this.email,
         password: this.password,
       }).subscribe({

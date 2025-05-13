@@ -49,7 +49,7 @@ export class ApiServiceService {
     }
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/new_chat`, {}, {
+        this.http.post<void>(`http://localhost:5000/api/new_chat`, {}, {
           headers: this.getHeaders()
         })
       );
@@ -67,12 +67,31 @@ export class ApiServiceService {
     }
     try {
       return await firstValueFrom(
-        this.http.get<Chat[]>(`http://localhost:5000/chats`, {
+        this.http.get<Chat[]>(`http://localhost:5000/api/chats`, {
           headers: this.getHeaders()
         })
       );
     } catch (error) {
       console.error(error)
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async deleteChat(id: number): Promise<Chat[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/api/chats/delete/${id}`, {}, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getChats();
+    } catch (error) {
+      console.error('Failed to delete note:', error);
       this.router.navigate(['/login']);
       return [];
     }
@@ -85,7 +104,7 @@ export class ApiServiceService {
     
     try {
       return await firstValueFrom(
-        this.http.get<Message[]>(`http://localhost:5000/chat/${chatId}`, {
+        this.http.get<Message[]>(`http://localhost:5000/api/chat/${chatId}`, {
           headers: this.getHeaders()
         })
       );
@@ -103,7 +122,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/chat/${chatId}`, message, {
+        this.http.post<void>(`http://localhost:5000/api/chat/${chatId}`, message, {
           headers: this.getHeaders()
         })
       );
@@ -122,7 +141,7 @@ export class ApiServiceService {
     
     try {
       return await firstValueFrom(
-        this.http.get<Note[]>('http://localhost:5000/items/True', {
+        this.http.get<Note[]>('http://localhost:5000/api/items/True', {
           headers: this.getHeaders()
         })
       );
@@ -139,7 +158,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>('http://localhost:5000/items/True', note, {
+        this.http.post<void>('http://localhost:5000/api/items/True', note, {
           headers: this.getHeaders()
         })
       );
@@ -158,13 +177,32 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/items/update/${id}`, val, {
+        this.http.post<void>(`http://localhost:5000/api/items/update/${id}`, val, {
           headers: this.getHeaders()
         })
       );
       return this.getNotes();
     } catch (error) {
       console.error('Failed to update note:', error);
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+
+  async deleteNote(id: number): Promise<Note[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/api/items/delete/${id}`, {}, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getNotes();
+    } catch (error) {
+      console.error('Failed to delete note:', error);
       this.router.navigate(['/login']);
       return [];
     }

@@ -32,7 +32,7 @@ def init_db():
 
     conn.commit()
     
-@app.route('/login', methods=["POST"])
+@app.route('/api/login', methods=["POST"])
 def login():
     conn = sql.connect('app.db')
 
@@ -47,7 +47,7 @@ def login():
     else:
         return jsonify({'message': 'Login Failed'}), 401
     
-@app.route('/chat/<id>', methods=["GET", "POST"])
+@app.route('/api/chat/<id>', methods=["GET", "POST"])
 @jwt_required()
 def get_conversation(id):
     conn = sql.connect('app.db')
@@ -64,7 +64,7 @@ def get_conversation(id):
     data = [{'chat': row[1], 'user': row[2], 'text': row[3]} for row in messages]
     return jsonify(data)
 
-@app.route('/new_chat', methods=["POST"])
+@app.route('/api/new_chat', methods=["POST"])
 @jwt_required()
 def new_conversation():
     conn = sql.connect('app.db')
@@ -78,14 +78,23 @@ def new_conversation():
     data = {'title': title, 'messages': [{'id': row[0], 'message': row[2]} for row in messages]}
     return jsonify(data)
 
-@app.route('/chats')
+@app.route('/api/chats')
 @jwt_required()
 def get_conversations():
     conn = sql.connect('app.db')
     conversations = conn.execute('SELECT * FROM chats').fetchall()
     return jsonify([{'id': c[0], 'item': c[1], 'title': c[2]} for c in conversations])
 
-@app.route('/items/<tasks>', methods=["GET", "POST"])
+@app.route('/api/chats/delete/<id>', methods=["GET", "POST"])
+@jwt_required()
+def delete_chat(id):
+    conn = sql.connect('app.db')
+    if request.method == 'POST':
+        conn.execute('DELETE FROM chats WHERE id = ?', (id,))
+        conn.commit()
+    return jsonify({'message': 'Chat deleted successfully'})
+
+@app.route('/api/items/<tasks>', methods=["GET", "POST"])
 @jwt_required()
 def notes(tasks):
     conn = sql.connect('app.db')
@@ -100,7 +109,7 @@ def notes(tasks):
     notes_list = [{'id': row[0], 'task': row[1], 'title': row[2], 'content': row[3]} for row in notes]
     return jsonify(notes_list)
 
-@app.route('/items/update/<id>', methods=["GET", "POST"])
+@app.route('/api/items/update/<id>', methods=["GET", "POST"])
 @jwt_required()
 def update_note(id):
     conn = sql.connect('app.db')
@@ -113,6 +122,15 @@ def update_note(id):
                         (data['title'], data['content'], id))
             conn.commit()
     return []
+
+@app.route('/api/items/delete/<id>', methods=["GET", "POST"])
+@jwt_required()
+def delete_note(id):
+    conn = sql.connect('app.db')
+    if request.method == 'POST':
+        conn.execute('DELETE FROM items WHERE id = ?', (id,))
+        conn.commit()
+    return jsonify({'message': 'Note deleted successfully'})
 
 if __name__ == '__main__':
     init_db()
