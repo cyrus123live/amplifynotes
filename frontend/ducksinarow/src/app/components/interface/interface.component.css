@@ -28,12 +28,13 @@
   border-right: 1px solid black;
 }
 .messages {
+  padding-top: 20px;
   overflow-y: scroll;
   display: flex;
   position: relative;
   flex-direction: column;
   gap: 10px;
-  height: calc(100% - 60px);
+  height: 80vh;
   align-items: flex-start;
 }
 .message-form {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, providePlatformInitializer } from '@angular/core';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
@@ -8,7 +8,8 @@ import { ApiServiceService } from '../../api-service.service';
 import { Chat } from '../../interfaces/chat';
 import { Message } from '../../interfaces/message';
 import { FormBuilder, FormGroup } from '@angular/forms'; // Add these imports
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, scan } from 'rxjs/operators';
+import { ChatService } from '../../chat.service';
 
 @Component({
   selector: 'app-interface',
@@ -31,10 +32,11 @@ export class InterfaceComponent {
   chatId = 1;
   chats: Chat[] = [];
   chat: Chat = {
-    title: '',
-    associatedItem: -1
-  }
+    associatedItem: -1,
+    title: "Loading..."
+  };
   messages: Message[] = [];
+  answer = "";
 
   logout() {
     this.apiService.logout();
@@ -45,7 +47,7 @@ export class InterfaceComponent {
     }
   }
     
-  constructor(private apiService: ApiServiceService, private fb: FormBuilder) {
+  constructor(private apiService: ApiServiceService, private fb: FormBuilder, private chatService: ChatService) {
     this.loadNotes();
     this.getChats()
   }
@@ -63,7 +65,7 @@ export class InterfaceComponent {
         distinctUntilChanged(),     // Only trigger if the value actually changes
         switchMap(val => {
           if (!this.note.id) {
-            return this.apiService.addNote(val);
+            return this.apiService.newNote(val);
           }
           return this.apiService.updateNote(this.note.id, val);
         })
@@ -90,7 +92,7 @@ export class InterfaceComponent {
     try {
       this.isLoading = true;
       this.noteList = await this.apiService.getNotes();
-      this.note = this.noteList[0];
+      setTimeout(() => this.selectNote(this.noteList[0]), 0);
     } catch (error) {
       // Errors are now handled in the service, no need to do anything here
     } finally {
@@ -100,15 +102,15 @@ export class InterfaceComponent {
 
   async newNote() {    
     const newNote: Note = {
-      title: "New Note",
+      title: "Untitled",
       content: ""
     };
     
     try {
-      this.noteList = await this.apiService.addNote(newNote);
+      this.noteList = await this.apiService.newNote(newNote);
       // Get the newly created note from the list (it should be the last one)
       const createdNote = this.noteList[0];
-      this.selectNote(createdNote);
+      setTimeout(() => this.selectNote(createdNote), 0);
     } catch (error) {
       // Errors are now handled in the service, no need to do anything here
     }
@@ -147,12 +149,59 @@ export class InterfaceComponent {
   async submitMessage() {
     const new_message: Message = {
       chat: this.chatId,
-      user: false,
+      user: true,
       text: this.message
     };
+    let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \
+      This user has just sent you a message which is as follows: '${this.message}'.`
+    if (this.messages.length > 0) {
+      prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;
+    }
+    if (this.noteList.length > 0) {
+      prompt_string += `The users notes are: [${this.noteList.map(note => `Title: ${note.title} Content: ${note.content}`).join(', ')}]`;
+    }
+    this.message = "";
     try {
-      this.messages = await this.apiService.sendMessage(this.chatId, new_message);
-      setTimeout(() => this.scrollMessages(), 0);
+      this.apiService.sendMessage(new_message);
+      this.messages.push(new_message);
+      this.chatService.stream(prompt_string)
+      .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
+      .subscribe({
+        next: txt => this.answer = txt,
+        error: err => console.error(err),
+        complete: async () => {
+          const response: Message = {
+            chat: this.chatId,
+            user: false,
+            text: this.answer
+          }
+          await this.apiService.sendResponse(response);
+          if (this.chat.title != "Untitled" ) {
+            this.getChats();
+            this.getChat();
+            this.answer = "";
+          }
+        }
+      });
+      if (this.chat.title == "Untitled" ) {
+        this.chatService.stream(`Please come up with a very short title for this conversation, with no quotes: Prompt: ${new_message.text}, Response: ${this.answer}`)
+        .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
+        .subscribe({
+          next: txt => this.chat.title = txt,
+          error: err => console.error(err),
+          complete: async () => {
+            const response: Message = {
+              chat: this.chatId,
+              user: false,
+              text: this.answer
+            }
+            await this.apiService.sendTitle(this.chat.title, this.chatId);
+            this.getChats();
+            this.getChat();
+            this.answer = "";
+          }
+        });
+      }
     } catch (error) {
     }
   }
@@ -179,10 +228,11 @@ export class InterfaceComponent {
     }
   }
 
-  async deleteChat(id: number | undefined) {
+  async deleteChat() {
     try {
-      this.chats = await this.apiService.deleteChat(id? id: 1);
+      this.chats = await this.apiService.deleteChat(this.chatId);
       this.chat = this.chats[0];
+      this.getChat();
     } catch (error) {
     }
   }

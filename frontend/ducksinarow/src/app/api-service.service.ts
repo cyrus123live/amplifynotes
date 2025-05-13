@@ -17,7 +17,7 @@ export class ApiServiceService {
   ) {}
 
   // Get the current token from localStorage
-  private getToken(): string | null {
+  getToken(): string | null {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('access_token');
     }
@@ -104,7 +104,7 @@ export class ApiServiceService {
     
     try {
       return await firstValueFrom(
-        this.http.get<Message[]>(`http://localhost:5000/api/chat/${chatId}`, {
+        this.http.get<Message[]>(`http://localhost:5000/api/message/${chatId}`, {
           headers: this.getHeaders()
         })
       );
@@ -115,22 +115,59 @@ export class ApiServiceService {
     }
   }
 
-  async sendMessage(chatId: number, message: Message): Promise<Message[]> {
+  async sendMessage(message: Message): Promise<Message[]> {
     if (!this.isAuthenticated()) {
       return [];
     }
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/chat/${chatId}`, message, {
+        this.http.post<void>(`http://localhost:5000/api/message/${message.chat}`, message, {
           headers: this.getHeaders()
         })
       );
-      return this.getMessages(chatId);
+      return this.getMessages(message.chat);
     } catch (error) {
       console.error(error);
       this.router.navigate(['/login']);
       return [];
+    }
+  }
+
+  async sendResponse(message: Message): Promise<Message[]> {
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/api/response/${message.chat}`, message, {
+          headers: this.getHeaders()
+        })
+      );
+      return this.getMessages(message.chat);
+    } catch (error) {
+      console.error(error);
+      this.router.navigate(['/login']);
+      return [];
+    }
+  }
+  async sendTitle(title: string, id: number): Promise<void> {
+    if (!this.isAuthenticated()) {
+      return;
+    }
+    
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`http://localhost:5000/api/title/${id}`, {"title": title}, {
+          headers: this.getHeaders()
+        })
+      );
+      return;
+    } catch (error) {
+      console.error(error);
+      this.router.navigate(['/login']);
+      return;
     }
   }
 
@@ -151,7 +188,7 @@ export class ApiServiceService {
     }
   }
 
-  async addNote(note: Note): Promise<Note[]> {
+  async newNote(note: Note): Promise<Note[]> {
     if (!this.isAuthenticated()) {
       return [];
     }
