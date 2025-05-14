@@ -33,7 +33,7 @@ export class InterfaceComponent {
   chats: Chat[] = [];
   chat: Chat = {
     associatedItem: -1,
-    title: "Loading..."
+    title: ""
   };
   messages: Message[] = [];
   answer = "";
@@ -92,7 +92,6 @@ export class InterfaceComponent {
     try {
       this.isLoading = true;
       this.noteList = await this.apiService.getNotes();
-      setTimeout(() => this.selectNote(this.noteList[0]), 0);
     } catch (error) {
       // Errors are now handled in the service, no need to do anything here
     } finally {
@@ -110,24 +109,31 @@ export class InterfaceComponent {
       this.noteList = await this.apiService.newNote(newNote);
       // Get the newly created note from the list (it should be the last one)
       const createdNote = this.noteList[0];
-      setTimeout(() => this.selectNote(createdNote), 0);
+      setTimeout(() => this.selectNote(createdNote || {title: "", content: ""}), 0);
     } catch (error) {
       // Errors are now handled in the service, no need to do anything here
     }
   }
 
   selectNote(note: Note) {
-    this.note = note;
-    this.note_form.patchValue({ 
-      title: note.title,
-      content: note.content
-    }, { emitEvent: false }); // Prevent triggering valueChanges
+    if (this.note == note) {
+      this.note = {
+        title: "",
+        content: ""
+      }
+    } else {
+      this.note = note;
+      this.note_form.patchValue({ 
+        title: note.title,
+        content: note.content
+      }, { emitEvent: false }); // Prevent triggering valueChanges
+    }
   }
 
   async deleteNote(id: number | undefined) {
     try {
       this.noteList = await this.apiService.deleteNote(id? id: 1);
-      this.selectNote(this.noteList[0]);
+      this.selectNote(this.noteList[0] || {title: "", content: ""});
     } catch (error) {
     }
   }
@@ -142,7 +148,11 @@ export class InterfaceComponent {
   }
 
   async selectChat(id?: number) {
-    this.chatId = id || 1;
+    if (this.chatId == id) {
+      this.chatId = 1;
+    } else {
+      this.chatId = id || 1;
+    }
     this.getChat()
   }
   
@@ -209,7 +219,6 @@ export class InterfaceComponent {
     try {
       this.messages = await this.apiService.getMessages(this.chatId);
       this.chat = this.chats.find(chat => chat.id === this.chatId) || { title: '', associatedItem: -1 };
-      setTimeout(() => this.scrollMessages(), 0);
     } catch (error) {
 
     }
@@ -217,7 +226,9 @@ export class InterfaceComponent {
   async newChat() {
     try {
       this.chats = await this.apiService.newChat();
-      this.chat = this.chats[0];
+      this.chat = this.chats[0] || { title: '', associatedItem: -1 };
+      this.chatId = this.chat.id || 0;
+      this.getChat();
     } catch (error) {
     }
   }
@@ -231,7 +242,7 @@ export class InterfaceComponent {
   async deleteChat() {
     try {
       this.chats = await this.apiService.deleteChat(this.chatId);
-      this.chat = this.chats[0];
+      this.chat = this.chats[0] || { title: '', associatedItem: -1 };
       this.getChat();
     } catch (error) {
     }

@@ -4,28 +4,44 @@
 }
 .interface-inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto;
   width: 100%;
 }
 .sidebar-outer {
   border-right: 1px solid black;
   padding: 20px;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto;
+  display: flex;
+  flex-direction: column;
   width: 200px;
+}
+.sidebar-header button {
+  width: min-content;
+  padding: 20px;
+}
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .chat-list {
   overflow-y: scroll;
+  height: 40vh;
 }
 .note-list {
   overflow-y: scroll;
+  height: 40vh;
 }
 .chat-outer {
   position: relative;
   height: 100vh;
   padding: 20px;
   border-right: 1px solid black;
+}
+.notes-outer {
+  position: relative;
 }
 .messages {
   padding-top: 20px;
@@ -37,11 +53,25 @@
   height: 80vh;
   align-items: flex-start;
 }
-.message-form {
+.bottom-form {
   position: absolute;
   bottom: 0;
   width: calc(100% - 40px);
-  margin: 20px;
+  margin-bottom: 10px;
+}
+.bottom-form input {
+  margin-bottom: 10px;
+}
+.bottom-form .bottom-form-lower {
+  width: min-content;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+}
+.bottom-form .bottom-form-lower button {
+  padding: 5px;
+  width: min-content;
 }
 .user-message {
   align-self: flex-end;
@@ -55,6 +85,17 @@
 }
 .header {
   font-size: 1.8em;
+}
+.title {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-family: inherit;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 .content {
   width: 100%;

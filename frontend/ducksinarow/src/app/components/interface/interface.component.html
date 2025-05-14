@@ -1,39 +1,43 @@
 <div class='interface'>
     <div class="sidebar-outer">
         <h3>Perspective</h3>
-        <h3>Chats</h3>
+        <div class="sidebar-header"><h3>Chats</h3><button (click)="newChat()">+</button></div>
         <div class="chat-list">
-            <button (click)="newChat()">New Chat</button>
             <button *ngFor="let chat of chats" (click)="selectChat(chat.id)">{{ chat.title }}</button>
         </div>
-        <h3>Notes</h3>
+        <div class="sidebar-header"><h3>Notes</h3><button (click)="newNote()">+</button></div>
         <div class="note-list">
-            <button (click)="newNote()">New Note</button>
             <button (click)="selectNote(note)" *ngFor="let note of noteList">{{ note.title || 'Untitled' }}</button>
         </div>
         <button class='logout' (click)="logout()">Logout</button>
     </div>
-    <div class="interface-inner">
-        <div class="chat-outer" *ngIf="chat.title != 'Loading...'">
-            <button (click)="deleteChat()">Delete</button>
+    <div class="interface-inner" [style.grid-template-columns]="chat.title && note.title ? '1fr 1fr' : '1fr'">
+        <div class="chat-outer" *ngIf="chat.title">
             <div class="header" (keydown)="disableEnter($event)">{{chat.title}}</div>
             <div class="messages">
                 <div [class]="message.user ? 'user-message' : 'bot-message'" *ngFor="let message of messages">{{ message.text }}</div>
                 <div> {{answer}}</div>
             </div>
-            <form class="message-form" (ngSubmit)="submitMessage()">
+            <form class="bottom-form" (ngSubmit)="submitMessage()">
                 <div>
                     <input type="message" id="message" name="message" [(ngModel)]="message" required placeholder="Send a message..."/>
                 </div>
                 <button type="submit" style="display: none;">Send</button>
+                <div class="bottom-form-lower">
+                    <button type="button" (click)="deleteChat()"><img src="icons8-delete.svg" alt="delete"></button>
+                </div>
             </form>
         </div>
-        <div class="notes-outer" *ngIf="note && note.title !== ''">
+        <div class="notes-outer" *ngIf="note.title">
             <form class="note-content-form" [formGroup]="note_form">
-            <button (click)="deleteNote(note.id)">Delete</button>
             <textarea class="header title" formControlName="title" (keydown)="disableEnter($event)">{{note.title}}</textarea>
             <textarea class="content" formControlName="content">{{note.content}}</textarea>
             </form>
+            <div class="bottom-form">
+                <div class="bottom-form-lower">
+                    <button (click)="deleteNote(note.id)"><img src="icons8-delete.svg" alt="delete"></button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

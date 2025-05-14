@@ -29,17 +29,12 @@ bcrypt = Bcrypt(app)
 
 def init_db():
     conn = sql.connect('app.db')
-    conn.execute("DROP TABLE items")
     conn.execute('CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, task BOOLEAN, title TEXT, content TEXT)')
-    conn.execute("DROP TABLE chats")
     conn.execute('CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT, associatedItem INTEGER, title TEXT)')
-    conn.execute("DROP TABLE messages")
     conn.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, chat INTEGER, user BOOLEAN, message TEXT)')
-
-    conn.execute("DROP TABLE users")
     conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)')
-    hashed_password = bcrypt.generate_password_hash("password").decode('utf-8')
-    conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', ("admin", hashed_password))
+    # hashed_password = bcrypt.generate_password_hash("password").decode('utf-8')
+    # conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', ("admin", hashed_password))
 
     conn.commit()
     
