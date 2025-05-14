@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { Note } from './interfaces/note';
-import { Chat } from './interfaces/chat';
-import { Message } from './interfaces/message';
+import { Note } from '../interfaces/note';
+import { Chat } from '../interfaces/chat';
+import { Message } from '../interfaces/message';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 

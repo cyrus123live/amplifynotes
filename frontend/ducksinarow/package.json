@@ -21,6 +21,7 @@
     "@angular/router": "^19.2.0",
     "@angular/ssr": "^19.2.11",
     "express": "^4.18.2",
+    "github-markdown-css": "^5.8.1",
     "marked": "^15.0.11",
     "ngx-markdown": "^19.1.1",
     "prismjs": "^1.30.0",

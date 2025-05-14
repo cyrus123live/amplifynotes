@@ -1,3 +1,6 @@
+.bot-message {
+  white-space: pre-wrap;   /* keeps single newlines as <br> */
+}
 .interface {
   display: flex;
   width: 100%;

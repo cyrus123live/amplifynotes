@@ -1,7 +1,7 @@
 // chat.service.ts
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiServiceService } from './api-service.service';
+import { ApiServiceService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {

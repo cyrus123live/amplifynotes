@@ -1,20 +1,21 @@
-import { Component, providePlatformInitializer } from '@angular/core';
+import { Component, NgModule, providePlatformInitializer } from '@angular/core';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { Note } from '../../interfaces/note';
-import { ApiServiceService } from '../../api-service.service';
+import { ApiServiceService } from '../../services/api.service';
 import { Chat } from '../../interfaces/chat';
 import { Message } from '../../interfaces/message';
 import { FormBuilder, FormGroup } from '@angular/forms'; // Add these imports
 import { debounceTime, distinctUntilChanged, switchMap, scan } from 'rxjs/operators';
-import { ChatService } from '../../chat.service';
+import { ChatService } from '../../services/chat.service';
+import { MarkdownPipe } from '../../services/markdown.service';
 
 @Component({
   selector: 'app-interface',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MarkdownPipe],
   templateUrl: './interface.component.html',
   styleUrl: './interface.component.css'
 })
@@ -163,6 +164,7 @@ export class InterfaceComponent {
       text: this.message
     };
     let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \
+      Return your answer in GitHub-flavoured Markdown and insert a blank line after every heading, list or horizontal rule. \
       This user has just sent you a message which is as follows: '${this.message}'.`
     if (this.messages.length > 0) {
       prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;
