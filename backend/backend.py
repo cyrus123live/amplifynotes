@@ -10,6 +10,7 @@ from functools import wraps
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import datetime
 
 load_dotenv()
 
@@ -38,8 +39,8 @@ def drop_db():
 def init_db():
     conn = sql.connect('app.db')
     conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)')
-    conn.execute('CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, user INTEGER, task BOOLEAN, title TEXT, content TEXT)')
-    conn.execute('CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT, user INTEGER, associatedItem INTEGER, title TEXT)')
+    conn.execute('CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, user INTEGER, task BOOLEAN, title TEXT, content TEXT, createdAt INTEGER, updatedAt INTEGER)')
+    conn.execute('CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT, user INTEGER, associatedItem INTEGER, title TEXT, createdAt INTEGER, updatedAt INTEGER)')
     conn.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, chat INTEGER, user BOOLEAN, message TEXT)')
     conn.commit()
     
@@ -77,19 +78,18 @@ def chat():
 
 @app.route('/api/create_user', methods=["POST"])
 def create_user():
-    conn = sql.connect('app.db')
-    if request.method == "POST":    
-        try:
-            data = request.get_json()
+    conn = sql.connect('app.db')  
+    try:
+        data = request.get_json()
 
-            username = data.get('username')
-            hashed_password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
-            
-            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
-            conn.commit()
-            return jsonify({'message': 'User created successfully'})
-        except Exception as e:
-            return jsonify({'message': 'User creation failed: e'}), 400
+        username = data.get('username')
+        hashed_password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
+        
+        conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+        conn.commit()
+        return jsonify({'message': 'User created successfully'})
+    except Exception as e:
+        return jsonify({'message': 'User creation failed: e'}), 400
 
 @app.route('/api/login', methods=["POST"])
 def login():
@@ -116,6 +116,7 @@ def get_conversation(id):
     if request.method == "POST":
         new_message = request.get_json()["text"]
         conn.execute("INSERT INTO messages (chat, user, message) VALUES (?, ?, ?)", (id, True, new_message))
+        conn.execute("UPDATE chats SET updatedAt = ? WHERE id = ?", (datetime.datetime.now().timestamp(), id))
         conn.commit()
 
     messages = conn.execute('SELECT * FROM messages WHERE chat = ?', (id,)).fetchall()
@@ -159,7 +160,9 @@ def new_conversation():
     conn = sql.connect('app.db')
 
     title = "Untitled"
-    conn.execute('INSERT INTO chats (user, associatedItem, title) VALUES (?, ?, ?)', (current_user_id, -1, title))
+    conn.execute('INSERT INTO chats (user, associatedItem, title, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)', \
+    (current_user_id, -1, title, datetime.datetime.now().timestamp(), datetime.datetime.now().timestamp()))
+
     id = conn.execute('SELECT id FROM chats WHERE title = ? AND user = ?', (title, current_user_id)).fetchall()[-1][0]
     conn.commit()
 
@@ -173,6 +176,7 @@ def get_conversations():
     current_user_id = get_jwt_identity()
     conn = sql.connect('app.db')
     conversations = conn.execute('SELECT * FROM chats WHERE user = ?', (current_user_id,)).fetchall()
+    conversations = sorted(conversations, key=lambda x: x[5], reverse=True)
     return jsonify([{'id': c[0], 'item': c[2], 'title': c[3]} for c in conversations])
 
 @app.route('/api/chats/delete/<id>', methods=["GET", "POST"])
@@ -194,10 +198,12 @@ def notes(tasks):
 
     if request.method == 'POST':
         data = request.get_json()
-        conn.execute('INSERT INTO items (user, task, title, content) VALUES (?, ?, ?, ?)', (current_user_id, tasks, data['title'], data['content']))
+        conn.execute('INSERT INTO items (user, task, title, content, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)', \
+        (current_user_id, tasks, data['title'], data['content'], datetime.datetime.now().timestamp(), datetime.datetime.now().timestamp()))
         conn.commit()
 
     notes = conn.execute('SELECT * FROM items WHERE user = ? AND task = ?', (current_user_id, tasks)).fetchall()
+    notes = sorted(notes, key=lambda x: x[6], reverse=True)
     notes_list = [{'id': row[0], 'task': row[2], 'title': row[3], 'content': row[4]} for row in notes]
     return jsonify(notes_list)
 
@@ -211,8 +217,8 @@ def update_note(id):
         # First get the current task status
         current_note = conn.execute('SELECT task FROM items WHERE id = ? AND user = ?', (id, current_user_id)).fetchone()
         if current_note:
-            conn.execute("UPDATE items SET title = ?, content = ? WHERE id = ? AND user = ?", 
-                        (data['title'], data['content'], id, current_user_id))
+            conn.execute("UPDATE items SET title = ?, content = ?, updatedAt = ? WHERE id = ? AND user = ?", 
+                        (data['title'], data['content'], datetime.datetime.now().timestamp(), id, current_user_id))
             conn.commit()
     return []
 
