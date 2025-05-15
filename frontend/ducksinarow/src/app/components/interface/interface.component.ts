@@ -163,8 +163,8 @@ export class InterfaceComponent {
       user: true,
       text: this.message
     };
-    let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \
-      Return your answer in GitHub-flavoured Markdown and insert a blank line after every heading, list or horizontal rule. \
+    let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \\ 
+      Please avoid tables. \
       This user has just sent you a message which is as follows: '${this.message}'.`
     if (this.messages.length > 0) {
       prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;
@@ -266,7 +266,7 @@ export class InterfaceComponent {
     text = text.replace(/(\- [^\n]+?)(\- )/g, '$1\n\n$2');
     
     // Add newlines after any long-ish sentences
-    text = text.replace(/(\.)( [A-Z])/g, '$1\n$2');
+    // text = text.replace(/(\.)( [A-Z])/g, '$1\n$2');
     
     // Add spacing between paragraphs with bullets/dashes
     text = text.replace(/(\.)([A-Z]|[\-\*] )/g, '$1\n\n$2');
