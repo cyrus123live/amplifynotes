@@ -30,7 +30,7 @@ export class InterfaceComponent {
   };
   
   message = "";
-  chatId = 1;
+  chatId = -1;
   chats: Chat[] = [];
   chat: Chat = {
     associatedItem: -1,
@@ -150,7 +150,7 @@ export class InterfaceComponent {
 
   async selectChat(id?: number) {
     if (this.chatId == id) {
-      this.chatId = 1;
+      this.chatId = -1;
     } else {
       this.chatId = id || 1;
     }
@@ -179,7 +179,7 @@ export class InterfaceComponent {
       this.chatService.stream(prompt_string)
       .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
       .subscribe({
-        next: txt => this.answer = txt,
+        next: txt => {this.answer = txt},
         error: err => console.error(err),
         complete: async () => {
           const response: Message = {
@@ -187,6 +187,7 @@ export class InterfaceComponent {
             user: false,
             text: this.answer
           }
+          console.log(this.answer);
           await this.apiService.sendResponse(response);
           if (this.chat.title != "Untitled" ) {
             this.getChats();
@@ -248,5 +249,37 @@ export class InterfaceComponent {
       this.getChat();
     } catch (error) {
     }
+  }
+
+  formatText(text: string): string {
+    if (!text) return '';
+    
+    // Add proper spacing around '---' separators
+    text = text.replace(/([^\n])---([^\n])/g, '$1\n\n---\n\n$2');
+    text = text.replace(/([^\n])---(\n)/g, '$1\n\n---$2');
+    text = text.replace(/(\n)---([^\n])/g, '$1---\n\n$2');
+    text = text.replace(/^---([^\n])/g, '---\n\n$1');
+    text = text.replace(/([^\n])---$/g, '$1\n\n---');
+    text = text.replace(/(\. )([A-Z])/g, '$1\n\n$2');
+    
+    // Insert newlines between dash/bullet items
+    text = text.replace(/(\- [^\n]+?)(\- )/g, '$1\n\n$2');
+    
+    // Add newlines after any long-ish sentences
+    text = text.replace(/(\.)( [A-Z])/g, '$1\n$2');
+    
+    // Add spacing between paragraphs with bullets/dashes
+    text = text.replace(/(\.)([A-Z]|[\-\*] )/g, '$1\n\n$2');
+    
+    // THEN preserve multiple consecutive newlines (after adding new ones above)
+    text = text.replace(/\n\n\n+/g, '<br><br><br>');
+    
+    // Preserve double newlines
+    text = text.replace(/\n\n/g, '<br><br>');
+    
+    // Replace remaining single newlines LAST
+    text = text.replace(/\n/g, '<br>');
+    
+    return text;
   }
 }

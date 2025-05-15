@@ -14,6 +14,8 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   email: string = '';
   password: string = '';
+  register_email: string = '';
+  register_password: string = '';
 
   constructor(
     private http: HttpClient,
@@ -47,6 +49,26 @@ export class LoginComponent {
       });
     } else {
       console.error('Email and password are required');
+    }
+  }
+
+  register() {
+    if (this.register_email && this.register_password) {
+      this.http.post('http://localhost:5000/api/create_user', {
+        username: this.register_email,
+        password: this.register_password,
+      }).subscribe({
+        next: (data: any) => {
+          this.email = this.register_email;
+          this.password = this.register_password;
+          this.login();
+        },
+        error: (error) => {
+          console.error('Error creating user:', error); 
+        }
+      });
+    } else {
+      console.error('Username and password are required');
     }
   }
 }
