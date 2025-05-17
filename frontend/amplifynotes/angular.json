@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ducksinarow": {
+    "amplifynotes": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/ducksinarow",
+            "outputPath": "dist/amplifynotes",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -64,10 +64,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ducksinarow:build:production"
+              "buildTarget": "amplifynotes:build:production"
             },
             "development": {
-              "buildTarget": "ducksinarow:build:development"
+              "buildTarget": "amplifynotes:build:development"
             }
           },
           "defaultConfiguration": "development"

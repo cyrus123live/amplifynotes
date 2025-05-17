@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class ApiServiceService {
+
+  api_url = "http://localhost:5000/api";
   
   constructor(
     private http: HttpClient,
@@ -49,7 +51,7 @@ export class ApiServiceService {
     }
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/new_chat`, {}, {
+        this.http.post<void>(`${this.api_url}/new_chat`, {}, {
           headers: this.getHeaders()
         })
       );
@@ -67,7 +69,7 @@ export class ApiServiceService {
     }
     try {
       return await firstValueFrom(
-        this.http.get<Chat[]>(`http://localhost:5000/api/chats`, {
+        this.http.get<Chat[]>(`${this.api_url}/chats`, {
           headers: this.getHeaders()
         })
       );
@@ -85,7 +87,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/chats/delete/${id}`, {}, {
+        this.http.post<void>(`${this.api_url}/chats/delete/${id}`, {}, {
           headers: this.getHeaders()
         })
       );
@@ -104,7 +106,7 @@ export class ApiServiceService {
     
     try {
       return await firstValueFrom(
-        this.http.get<Message[]>(`http://localhost:5000/api/message/${chatId}`, {
+        this.http.get<Message[]>(`${this.api_url}/message/${chatId}`, {
           headers: this.getHeaders()
         })
       );
@@ -122,7 +124,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/message/${message.chat}`, message, {
+        this.http.post<void>(`${this.api_url}/message/${message.chat}`, message, {
           headers: this.getHeaders()
         })
       );
@@ -141,7 +143,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/response/${message.chat}`, message, {
+        this.http.post<void>(`${this.api_url}/response/${message.chat}`, message, {
           headers: this.getHeaders()
         })
       );
@@ -159,7 +161,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/title/${id}`, {"title": title}, {
+        this.http.post<void>(`${this.api_url}/title/${id}`, {"title": title}, {
           headers: this.getHeaders()
         })
       );
@@ -178,7 +180,7 @@ export class ApiServiceService {
     
     try {
       return await firstValueFrom(
-        this.http.get<Note[]>('http://localhost:5000/api/items/True', {
+        this.http.get<Note[]>(`${this.api_url}/items/True`, {
           headers: this.getHeaders()
         })
       );
@@ -195,7 +197,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>('http://localhost:5000/api/items/True', note, {
+        this.http.post<void>(`${this.api_url}/items/True`, note, {
           headers: this.getHeaders()
         })
       );
@@ -214,7 +216,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/items/update/${id}`, val, {
+        this.http.post<void>(`${this.api_url}/items/update/${id}`, val, {
           headers: this.getHeaders()
         })
       );
@@ -233,7 +235,7 @@ export class ApiServiceService {
     
     try {
       await firstValueFrom(
-        this.http.post<void>(`http://localhost:5000/api/items/delete/${id}`, {}, {
+        this.http.post<void>(`${this.api_url}/items/delete/${id}`, {}, {
           headers: this.getHeaders()
         })
       );

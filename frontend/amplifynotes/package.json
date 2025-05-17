@@ -1,5 +1,5 @@
 {
-  "name": "ducksinarow",
+  "name": "amplifynotes",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:ducksinarow": "node dist/ducksinarow/server/server.mjs"
+    "serve:ssr:amplifynotes": "node dist/amplifynotes/server/server.mjs"
   },
   "private": true,
   "dependencies": {
@@ -30,12 +30,14 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^19.0.1",
     "@angular-devkit/build-angular": "^19.2.11",
     "@angular/cli": "^19.2.11",
     "@angular/compiler-cli": "^19.2.0",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",
+    "dotenv": "^16.5.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
