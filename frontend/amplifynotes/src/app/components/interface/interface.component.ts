@@ -164,7 +164,7 @@ export class InterfaceComponent {
       text: this.message
     };
     let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \\ 
-      Please avoid tables. \
+      Please avoid tables, and code blocks. \
       This user has just sent you a message which is as follows: '${this.message}'.`
     if (this.messages.length > 0) {
       prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;

@@ -16,8 +16,10 @@
             <div class="header" (keydown)="disableEnter($event)">{{chat.title}}</div>
             <div class="messages">
                 <!-- <div [class]="message.user ? 'user-message' : 'bot-message markdown-body'" [innerHTML]="message.text | markdown" *ngFor="let message of messages"></div> -->
-                <div [class]="message.user ? 'user-message' : 'bot-message'" [innerHTML]="formatText(message.text)" *ngFor="let message of messages"></div>
-                <div class="bot-message" [innerHTML]="formatText(answer)"></div>
+                <!-- <div [class]="message.user ? 'user-message' : 'bot-message'" [innerHTML]="formatText(message.text)" *ngFor="let message of messages"></div>
+                <div class="bot-message" [innerHTML]="formatText(answer)"></div> -->
+                <pre [class]="message.user ? 'user-message' : 'bot-message'" style="white-space: pre-wrap;" [textContent]="message.text" *ngFor="let message of messages"></pre>
+                <pre class="bot-message" style="white-space: pre-wrap;" [textContent]="answer"></pre>
             </div>
             <form class="bottom-form" (ngSubmit)="submitMessage()">
                 <div>

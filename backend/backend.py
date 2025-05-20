@@ -44,20 +44,39 @@ def init_db():
     conn.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, chat INTEGER, user BOOLEAN, message TEXT)')
     conn.commit()
     
-def gpt_stream(user_prompt: str):
+def gpt_stream(prompt: str):
     stream = client.responses.create(
-        # model="gpt-4o-mini",            # or gpt-4.1, etc.
-        model = "gpt-4.1",
-        input=[{"role": "user", "content": user_prompt}],
+        model="gpt-4.1",
+        input=[{"role": "user", "content": prompt}],
         stream=True,
     )
-    for event in stream:
-        # OpenAI's python-v1 library gives you a dict per token:
-        # {'choices': [{'delta': {'content': '…'}}], 'finish_reason': None …}
-        if event.type == "response.output_text.delta":
-            print(event.delta, end="", flush=True)
-            yield f"data:{event.delta}\n\n"
+
+    for ev in stream:
+        if ev.type != "response.output_text.delta":
+            continue
+
+        text = ev.delta
+
+        # ➊  A **single** '\n' token → encode newline
+        if text == '\n':
+            yield "data:\n\n"            # empty data line
+            continue
+
+        # ➋  Text without newlines → send as-is
+        text = text.replace('\r', '')    # just in case
+        if '\n' not in text:
+            yield f"data:{text}\n\n"
+            continue
+
+        # ➌  Rare case: the delta itself contains embedded newlines
+        for line in text.split('\n'):
+            yield f"data:{line}\n\n"     # line (may be empty)
+
+    # graceful end-of-stream event
     yield "event: done\ndata:[DONE]\n\n"
+
+
+
 
 @app.route("/api/chat", methods=["POST"])
 @jwt_required()
