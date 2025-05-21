@@ -18,8 +18,8 @@
                 <!-- <div [class]="message.user ? 'user-message' : 'bot-message markdown-body'" [innerHTML]="message.text | markdown" *ngFor="let message of messages"></div> -->
                 <!-- <div [class]="message.user ? 'user-message' : 'bot-message'" [innerHTML]="formatText(message.text)" *ngFor="let message of messages"></div>
                 <div class="bot-message" [innerHTML]="formatText(answer)"></div> -->
-                <pre [class]="message.user ? 'user-message' : 'bot-message'" style="white-space: pre-wrap;" [textContent]="message.text" *ngFor="let message of messages"></pre>
-                <pre class="bot-message" style="white-space: pre-wrap;" [textContent]="answer"></pre>
+                <pre [class]="message.user ? 'user-message' : 'bot-message'" style="white-space: pre-wrap;" [innerHTML]="message.text | markdown" *ngFor="let message of messages"></pre>
+                <pre class="bot-message" style="white-space: pre-wrap;" [innerHTML]="answer | markdown"></pre>
             </div>
             <form class="bottom-form" (ngSubmit)="submitMessage()">
                 <div>
