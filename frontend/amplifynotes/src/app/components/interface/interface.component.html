@@ -15,11 +15,8 @@
         <div class="chat-outer" *ngIf="chat.title">
             <div class="header" (keydown)="disableEnter($event)">{{chat.title}}</div>
             <div class="messages">
-                <!-- <div [class]="message.user ? 'user-message' : 'bot-message markdown-body'" [innerHTML]="message.text | markdown" *ngFor="let message of messages"></div> -->
-                <!-- <div [class]="message.user ? 'user-message' : 'bot-message'" [innerHTML]="formatText(message.text)" *ngFor="let message of messages"></div>
-                <div class="bot-message" [innerHTML]="formatText(answer)"></div> -->
-                <pre [class]="message.user ? 'user-message' : 'bot-message'" style="white-space: pre-wrap;" [innerHTML]="message.text | markdown" *ngFor="let message of messages"></pre>
-                <pre class="bot-message" style="white-space: pre-wrap;" [innerHTML]="answer | markdown"></pre>
+                <pre [class]="message.user ? 'user-message' : 'bot-message'" style="white-space: pre-wrap;" [innerHTML]="formatMessage(message.text) | markdown" *ngFor="let message of messages"></pre>
+                <pre class="bot-message" style="white-space: pre-wrap;" [innerHTML]="formatMessage(answer) | markdown"></pre>
             </div>
             <form class="bottom-form" (ngSubmit)="submitMessage()">
                 <div>
@@ -28,6 +25,7 @@
                 <button type="submit" style="display: none;">Send</button>
                 <div class="bottom-form-lower">
                     <button type="button" (click)="deleteChat()"><img src="icons8-delete.svg" alt="delete"></button>
+                    <button type="button" [ngClass]="this.mode.includes('s') ? [mode, 'mode-selected'] : [mode]" (click)="toggleSearch()">Search</button>
                 </div>
             </form>
         </div>

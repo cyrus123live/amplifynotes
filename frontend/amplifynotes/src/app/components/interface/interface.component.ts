@@ -39,6 +39,9 @@ export class InterfaceComponent {
   messages: Message[] = [];
   answer = "";
 
+  mode = "s";
+  urls: string[] = [];
+
   logout() {
     this.apiService.logout();
   }
@@ -141,11 +144,19 @@ export class InterfaceComponent {
 
   // Chat --------------------
 
+  toggleSearch() {
+    if (this.mode.includes("s")) {
+      this.mode = this.mode.replace("s", "");
+    } else {
+      this.mode += "s";
+    }
+  }
+
   scrollMessages() {
-    const messagesDiv = document.querySelector('.messages');
-      if (messagesDiv) {
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }
+    // const messagesDiv = document.querySelector('.messages');
+    //   if (messagesDiv) {
+    //     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    //   }
   }
 
   async selectChat(id?: number) {
@@ -163,23 +174,26 @@ export class InterfaceComponent {
       user: true,
       text: this.message
     };
-    let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \\ 
-      Please avoid tables, and code blocks. \
-      This user has just sent you a message which is as follows: '${this.message}'.`
-    if (this.messages.length > 0) {
-      prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;
-    }
-    if (this.noteList.length > 0) {
-      prompt_string += `The users notes are: [${this.noteList.map(note => `Title: ${note.title} Content: ${note.content}`).join(', ')}]`;
-    }
+    // let prompt_string = `You are an assistant in an app which assists users in asking questions, especially about their notes. \\ 
+    //   Please avoid tables, and code blocks. \
+    //   This user has just sent you a message which is as follows: '${this.message}'.`
+    // if (this.messages.length > 0) {
+    //   prompt_string += `The other messages in this conversation were: [${this.messages.map(msg => msg.text).join(', ')}]`;
+    // }
+    // if (this.noteList.length > 0) {
+    //   prompt_string += `The users notes are: [${this.noteList.map(note => `Title: ${note.title} Content: ${note.content}`).join(', ')}]`;
+    // }
     this.message = "";
+    var url_buffer = true;
     try {
       this.apiService.sendMessage(new_message);
       this.messages.push(new_message);
-      this.chatService.stream(prompt_string)
+      this.chatService.stream(new_message.text, this.chatId, this.mode)
       .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
       .subscribe({
-        next: txt => {this.answer = txt},
+        next: txt => {
+          this.answer = txt
+        },
         error: err => console.error(err),
         complete: async () => {
           const response: Message = {
@@ -187,7 +201,6 @@ export class InterfaceComponent {
             user: false,
             text: this.answer
           }
-          console.log(this.answer);
           await this.apiService.sendResponse(response);
           if (this.chat.title != "Untitled" ) {
             this.getChats();
@@ -197,7 +210,7 @@ export class InterfaceComponent {
         }
       });
       if (this.chat.title == "Untitled" ) {
-        this.chatService.stream(`Please come up with a very short title for this conversation, with no quotes: Prompt: ${new_message.text}, Response: ${this.answer}`)
+        this.chatService.stream(`Please come up with a very short title for this conversation, with no quotes: Prompt: ${new_message.text}, Response: ${this.answer}`, this.chatId, "title")
         .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
         .subscribe({
           next: txt => this.chat.title = txt,
@@ -246,40 +259,19 @@ export class InterfaceComponent {
     try {
       this.chats = await this.apiService.deleteChat(this.chatId);
       this.chat = this.chats[0] || { title: '', associatedItem: -1 };
+      this.answer = "";
       this.getChat();
     } catch (error) {
     }
   }
 
-  formatText(text: string): string {
-    if (!text) return '';
-    
-    // Add proper spacing around '---' separators
-    text = text.replace(/([^\n])---([^\n])/g, '$1\n\n---\n\n$2');
-    text = text.replace(/([^\n])---(\n)/g, '$1\n\n---$2');
-    text = text.replace(/(\n)---([^\n])/g, '$1---\n\n$2');
-    text = text.replace(/^---([^\n])/g, '---\n\n$1');
-    text = text.replace(/([^\n])---$/g, '$1\n\n---');
-    text = text.replace(/(\. )([A-Z])/g, '$1\n\n$2');
-    
-    // Insert newlines between dash/bullet items
-    text = text.replace(/(\- [^\n]+?)(\- )/g, '$1\n\n$2');
-    
-    // Add newlines after any long-ish sentences
-    // text = text.replace(/(\.)( [A-Z])/g, '$1\n$2');
-    
-    // Add spacing between paragraphs with bullets/dashes
-    text = text.replace(/(\.)([A-Z]|[\-\*] )/g, '$1\n\n$2');
-    
-    // THEN preserve multiple consecutive newlines (after adding new ones above)
-    text = text.replace(/\n\n\n+/g, '<br><br><br>');
-    
-    // Preserve double newlines
-    text = text.replace(/\n\n/g, '<br><br>');
-    
-    // Replace remaining single newlines LAST
-    text = text.replace(/\n/g, '<br>');
-    
-    return text;
+  formatMessage(message: string) {
+
+    // var lookups = message.split('/[').map(m => m.replace(']/', ''));
+    // this.urls = lookups.slice(0, -1);
+    // console.log("urls "+ this.urls)
+
+    // return lookups[-1] ?? message;
+    return message;
   }
 }

@@ -11,6 +11,14 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import datetime
+import json
+
+from langgraph.prebuilt import create_react_agent
+from langchain_tavily import TavilySearch
+from langchain_core.prompts import PromptTemplate
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 
 load_dotenv()
 
@@ -44,6 +52,91 @@ def init_db():
     conn.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, chat INTEGER, user BOOLEAN, message TEXT)')
     conn.commit()
     
+def thought(thought: str) -> str:
+    '''Record private intermediate thoughts'''
+    return "Thought:" + thought
+tool_search = TavilySearch(max_results=3)
+memory = MemorySaver()
+
+graph_researcher = create_react_agent(
+    ChatDeepSeek(model="deepseek-chat",
+                 temperature=0.9,
+                 max_tokens=3072, 
+                 top_p=1.0,
+                 presence_penalty=0,
+                frequency_penalty=0),
+    tools=[tool_search],
+    prompt='''
+       You are a research-grade assistant.
+
+        - ALWAYS begin by invoking `tavily_search` with the user’s full question.
+        - After each Observation, reflect with a thought. If any claim is still uncertain, SEARCH AGAIN.
+        When you are ready to output final answer:
+        - Ensure it is at least 900 tokens long.
+        - Cite every fact with a citation from your searches (e.g. [wikipedia.org]).''',
+    checkpointer=memory
+).with_config(recursion_limit=30)
+
+graph_simple = create_react_agent(
+    ChatDeepSeek(model="deepseek-chat"),
+    tools=[],
+    prompt='''
+       You are a research-grade assistant.
+    ''',
+    checkpointer=memory
+).with_config(recursion_limit=30)
+
+graph_title = create_react_agent(
+    ChatDeepSeek(model="deepseek-chat"),
+    tools=[],
+    prompt='''You are in charge of creatively coming up with very short and concise titles for conversations, please output one concise title with no quotation marks.'''
+)
+
+def gpt_stream_langgraph(prompt: str, chatId: int, mode: str): 
+
+    conn = sql.connect('app.db') 
+
+    user = int(conn.execute("SELECT c.user FROM chats as c WHERE c.id = ?", (chatId,)).fetchone()[0])
+    notes = conn.execute("SELECT i.title, i.content FROM items as i WHERE i.user = ?", (user,)).fetchall()
+
+    if mode == "title":
+        graph_mode = graph_title
+    elif "s" in mode:
+        graph_mode = graph_researcher
+    else:
+        graph_mode = graph_simple
+
+    config = {"configurable": {"thread_id": chatId}}
+    for message_chunk, metadata in graph_mode.stream({"messages": [
+            {"role": "system", "content": f"The user's personal notes:\n\n{notes}"},
+            {"role": "user", "content": prompt}
+        ]}, config, stream_mode="messages"):
+
+        text = message_chunk.content
+        if message_chunk.content:
+
+            if text[0] == "{":
+                text_json = json.loads(text)
+                urls = [t["url"].split("//")[1].split("/")[0] for t in text_json["results"]]
+                yield f"data:SEARCH: {urls}\n\n"
+                yield f"data:\n\n"
+                continue
+
+            if text == '\n':
+                yield "data:\n\n"            # empty data line
+                continue
+
+            # ➋  Text without newlines → send as-is
+            text = text.replace('\r', '')    # just in case
+            if '\n' not in text:
+                yield f"data:{text}\n\n"
+                continue
+
+            # ➌  Rare case: the delta itself contains embedded newlines
+            for line in text.split('\n'):
+                yield f"data:{line}\n\n"     # line (may be empty)
+    yield "event: done\ndata:[DONE]\n\n"
+
 def gpt_stream(prompt: str):
     stream = client.responses.create(
         model="gpt-4.1",
@@ -81,13 +174,16 @@ def gpt_stream(prompt: str):
 @app.route("/api/chat", methods=["POST"])
 @jwt_required()
 def chat():
-    prompt = request.json.get("prompt", "")
+    prompt = request.json.get("prompt")
+    mode = request.json.get("mode")
+    chatId = request.json.get("chatId")
     if not prompt:
         return jsonify({"error": "prompt required"}), 400
 
     # Wrap the generator so Flask flushes each chunk immediately
     return Response(
-        stream_with_context(gpt_stream(prompt)),
+        # stream_with_context(gpt_stream(prompt)),
+        stream_with_context(gpt_stream_langgraph(prompt, chatId, mode)),
         mimetype="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

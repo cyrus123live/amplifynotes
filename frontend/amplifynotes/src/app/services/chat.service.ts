@@ -6,7 +6,7 @@ import { ApiServiceService } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   constructor(private apiService: ApiServiceService) {}
-  stream(prompt: string): Observable<string> {
+  stream(prompt: string, chatId: number, mode: string): Observable<string> {
   return new Observable<string>(observer => {
 
     fetch('http://localhost:5000/api/chat', {
@@ -15,7 +15,7 @@ export class ChatService {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.apiService.getToken()}`
       },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ "prompt": prompt, "chatId": chatId, "mode": mode })
     })
     .then(resp => {
       if (!resp.ok) throw new Error(resp.statusText);

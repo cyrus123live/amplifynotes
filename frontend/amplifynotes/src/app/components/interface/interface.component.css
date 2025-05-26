@@ -110,3 +110,7 @@
   text-overflow: ellipsis; /* Add ellipsis (...) for overflowed text */
   max-width: 100%;     /* Set a maximum width for the button */
 }
+
+.mode-selected {
+  background-color: #232323;
+}
