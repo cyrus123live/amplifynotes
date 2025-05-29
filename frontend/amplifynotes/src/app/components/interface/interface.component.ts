@@ -276,9 +276,15 @@ export class InterfaceComponent {
   }
 
   async summarizeChat() {
-    console.log("summarizing")
-    this.newNote()
-    this.note.title = `Summary: ${this.chat.title}`
+    console.log("summarizing");
+    const newNote: Note = {
+      title: `Summary: ${this.chat.title}`,
+      content: ''
+    };
+
+    this.noteList = await this.apiService.newNote(newNote);
+    this.selectNote(this.noteList[0]);
+    
     setTimeout(() => {});
     try {
       this.chatService.stream("Please summarize this conversation", this.chatId, "summarize")
@@ -287,13 +293,17 @@ export class InterfaceComponent {
         next: txt => {
           this.note.content = txt;
           console.log(txt);
+          this.note_form.patchValue(
+            { content: txt }, // update control
+            { emitEvent: false } // avoid triggering autosave loop
+          );      
         },
         error: err => console.error(err),
         complete: async () => {
         }
       });
     } catch (error) {
-    }
+    } 
   }
 
 }

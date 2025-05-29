@@ -62,6 +62,7 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
 
     user = int(conn.execute("SELECT c.user FROM chats as c WHERE c.id = ?", (chatId,)).fetchone()[0])
     notes = conn.execute("SELECT i.title, i.content FROM items as i WHERE i.user = ?", (user,)).fetchall()
+    conversation = conn.execute("SELECT m.user, m.message FROM messages as m WHERE m.chat = ?", (chatId,)).fetchall()
 
     tool_search = TavilySearch(max_results=3)
     memory = MemorySaver()
@@ -80,6 +81,7 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
             - ALWAYS begin by invoking `tavily_search` with the user’s full question.
             - After each search, reflect with a thought. If any claim is still uncertain, SEARCH AGAIN.
             - Where it benefits your response, use the user's notes as an additional source.
+            - Please do not output code.
             When you are ready to output final answer:
             - Ensure it is at least 900 tokens long.
             - Cite every fact with a citation from your searches (e.g. [wikipedia.org]).
@@ -94,6 +96,7 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
         prompt=f'''
         You are a research-grade assistant.
         You analyze the user's notes to come up with insightful responses.
+        Please do not output any code blocks.
         The user's notes:\n\n{notes}
         ''',
         checkpointer=memory
@@ -103,9 +106,22 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
         ChatOpenAI(model="o4-mini-2025-04-16"),
         tools=[],
         prompt=f'''
-        You summarize AI conversations into concise notes. 
-        Please do this smartly to convey the same information without losing depth in less words.
-        Please use no markdown and only output the note.
+        You are an expert synthesis engine.
+
+        Task
+        • Read the full conversation transcript.
+        • Extract only the *subject-matter substance* (facts, methods, conclusions, next steps).
+        • Ignore who said what and how the dialogue unfolded.
+        • Rewrite that substance as a compact set of bullet-point notes, as if it came from a single monologue.
+
+        Style constraints
+        • Do not reference “user”, “assistant”, “conversation”, “question”, or “answer”.
+        • Use present tense or noun phrases—no past-tense storytelling.
+        • Allowed formatting: bullets (– or •) and blank lines. Nothing else.
+        • Output **only** the bullet list.
+
+        Few-shot example:
+        {open('fewShotSummarize.txt').read()}
         ''',
         checkpointer=memory
     ).with_config(recursion_limit=30)
@@ -120,7 +136,8 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
         graph_mode = graph_title
     elif mode == "summarize":
         graph_mode = graph_summary
-        prompt = "Please summarize this conversation."
+        prompt = f"Please summarize this conversation: {''.join(['Assistant: ' + m[1] + '\n\n' if not m[0] else 'User: ' + m[1] + '\n\n' for m in conversation])}\nNote:\n"
+        print(prompt)
     elif "s" in mode:
         graph_mode = graph_researcher
     else:
