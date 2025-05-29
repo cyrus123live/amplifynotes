@@ -24,8 +24,9 @@
                 </div>
                 <button type="submit" style="display: none;">Send</button>
                 <div class="bottom-form-lower">
-                    <button type="button" (click)="deleteChat()"><img src="icons8-delete.svg" alt="delete"></button>
                     <button type="button" [ngClass]="this.mode.includes('s') ? [mode, 'mode-selected'] : [mode]" (click)="toggleSearch()">Search</button>
+                    <button type="button" (click)="summarizeChat()">Summarize to Note</button>
+                    <button type="button" (click)="deleteChat()"><img src="icons8-delete.svg" alt="delete"></button>
                 </div>
             </form>
         </div>

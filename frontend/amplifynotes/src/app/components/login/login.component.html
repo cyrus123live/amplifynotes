@@ -1,4 +1,5 @@
 <div class="login-outer">
+    <div class="error">{{error}}</div>
     <form (ngSubmit)="login()">
         <div>
             <label for="email">Email:</label>
@@ -18,6 +19,10 @@
         <div>
             <label for="password">Password:</label>
             <input type="password" id="password" name="register_password" [(ngModel)]="register_password" required />
+        </div>
+        <div>
+            <label for="activation">Activation Code:</label>
+            <input type="text" id="activation" name="activation" [(ngModel)]="activation" required />
         </div>
         <button type="submit">Register</button>
     </form>

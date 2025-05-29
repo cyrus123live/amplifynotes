@@ -16,6 +16,8 @@ export class LoginComponent {
   password: string = '';
   register_email: string = '';
   register_password: string = '';
+  activation: string = '';
+  error = '';
 
   constructor(
     private http: HttpClient,
@@ -49,10 +51,15 @@ export class LoginComponent {
       });
     } else {
       console.error('Email and password are required');
+      this.error = "Email and password are required";
     }
   }
 
   register() {
+    if (this.activation != "amplifynotes") {
+      this.error = "Incorrect activation code"
+      return;
+    }
     if (this.register_email && this.register_password) {
       this.http.post('http://localhost:5000/api/create_user', {
         username: this.register_email,
@@ -65,10 +72,12 @@ export class LoginComponent {
         },
         error: (error) => {
           console.error('Error creating user:', error); 
+          this.error = "Error creating user: " + error;
         }
       });
     } else {
       console.error('Username and password are required');
+      this.error = "Username and password are required";
     }
   }
 }

@@ -54,43 +54,7 @@ def init_db():
     
 def thought(thought: str) -> str:
     '''Record private intermediate thoughts'''
-    return "Thought:" + thought
-tool_search = TavilySearch(max_results=3)
-memory = MemorySaver()
-
-graph_researcher = create_react_agent(
-    ChatDeepSeek(model="deepseek-chat",
-                 temperature=0.9,
-                 max_tokens=3072, 
-                 top_p=1.0,
-                 presence_penalty=0,
-                frequency_penalty=0),
-    tools=[tool_search],
-    prompt='''
-       You are a research-grade assistant.
-
-        - ALWAYS begin by invoking `tavily_search` with the user’s full question.
-        - After each Observation, reflect with a thought. If any claim is still uncertain, SEARCH AGAIN.
-        When you are ready to output final answer:
-        - Ensure it is at least 900 tokens long.
-        - Cite every fact with a citation from your searches (e.g. [wikipedia.org]).''',
-    checkpointer=memory
-).with_config(recursion_limit=30)
-
-graph_simple = create_react_agent(
-    ChatDeepSeek(model="deepseek-chat"),
-    tools=[],
-    prompt='''
-       You are a research-grade assistant.
-    ''',
-    checkpointer=memory
-).with_config(recursion_limit=30)
-
-graph_title = create_react_agent(
-    ChatDeepSeek(model="deepseek-chat"),
-    tools=[],
-    prompt='''You are in charge of creatively coming up with very short and concise titles for conversations, please output one concise title with no quotation marks.'''
-)
+    return "\nThought:" + thought + "\n\n"
 
 def gpt_stream_langgraph(prompt: str, chatId: int, mode: str): 
 
@@ -99,8 +63,64 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
     user = int(conn.execute("SELECT c.user FROM chats as c WHERE c.id = ?", (chatId,)).fetchone()[0])
     notes = conn.execute("SELECT i.title, i.content FROM items as i WHERE i.user = ?", (user,)).fetchall()
 
+    tool_search = TavilySearch(max_results=3)
+    memory = MemorySaver()
+
+    graph_researcher = create_react_agent(
+        ChatOpenAI(model="gpt-4.1-2025-04-14",
+                    temperature=0.9,
+                    max_tokens=3072, 
+                    top_p=1.0,
+                    presence_penalty=0,
+                    frequency_penalty=0),
+        tools=[thought, tool_search],
+        prompt='''
+        You are a research-grade assistant.
+
+            - ALWAYS begin by invoking `tavily_search` with the user’s full question.
+            - After each search, reflect with a thought. If any claim is still uncertain, SEARCH AGAIN.
+            - Where it benefits your response, use the user's notes as an additional source.
+            When you are ready to output final answer:
+            - Ensure it is at least 900 tokens long.
+            - Cite every fact with a citation from your searches (e.g. [wikipedia.org]).
+            The user's notes:\n\n{notes}''',
+        checkpointer=memory
+    ).with_config(recursion_limit=30)
+
+    graph_simple = create_react_agent(
+        # ChatDeepSeek(model="deepseek-chat"),
+        ChatOpenAI(model="o4-mini-2025-04-16"),
+        tools=[],
+        prompt=f'''
+        You are a research-grade assistant.
+        You analyze the user's notes to come up with insightful responses.
+        The user's notes:\n\n{notes}
+        ''',
+        checkpointer=memory
+    ).with_config(recursion_limit=30)
+
+    graph_summary = create_react_agent(
+        ChatOpenAI(model="o4-mini-2025-04-16"),
+        tools=[],
+        prompt=f'''
+        You summarize AI conversations into concise notes. 
+        Please do this smartly to convey the same information without losing depth in less words.
+        Please use no markdown and only output the note.
+        ''',
+        checkpointer=memory
+    ).with_config(recursion_limit=30)
+
+    graph_title = create_react_agent(
+        ChatOpenAI(model="o4-mini-2025-04-16"),
+        tools=[],
+        prompt='''You are in charge of creatively coming up with very short and concise titles for conversations, please output one concise title with no quotation marks.'''
+    )
+
     if mode == "title":
         graph_mode = graph_title
+    elif mode == "summarize":
+        graph_mode = graph_summary
+        prompt = "Please summarize this conversation."
     elif "s" in mode:
         graph_mode = graph_researcher
     else:
@@ -108,7 +128,6 @@ def gpt_stream_langgraph(prompt: str, chatId: int, mode: str):
 
     config = {"configurable": {"thread_id": chatId}}
     for message_chunk, metadata in graph_mode.stream({"messages": [
-            {"role": "system", "content": f"The user's personal notes:\n\n{notes}"},
             {"role": "user", "content": prompt}
         ]}, config, stream_mode="messages"):
 

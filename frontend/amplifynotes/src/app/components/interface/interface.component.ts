@@ -184,7 +184,7 @@ export class InterfaceComponent {
     //   prompt_string += `The users notes are: [${this.noteList.map(note => `Title: ${note.title} Content: ${note.content}`).join(', ')}]`;
     // }
     this.message = "";
-    var url_buffer = true;
+    this.answer = "Thinking...";
     try {
       this.apiService.sendMessage(new_message);
       this.messages.push(new_message);
@@ -274,4 +274,26 @@ export class InterfaceComponent {
     // return lookups[-1] ?? message;
     return message;
   }
+
+  async summarizeChat() {
+    console.log("summarizing")
+    this.newNote()
+    this.note.title = `Summary: ${this.chat.title}`
+    setTimeout(() => {});
+    try {
+      this.chatService.stream("Please summarize this conversation", this.chatId, "summarize")
+      .pipe(scan((acc, t) => acc + t, ''))   // accumulate tokens
+      .subscribe({
+        next: txt => {
+          this.note.content = txt;
+          console.log(txt);
+        },
+        error: err => console.error(err),
+        complete: async () => {
+        }
+      });
+    } catch (error) {
+    }
+  }
+
 }
