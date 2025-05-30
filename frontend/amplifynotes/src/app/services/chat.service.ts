@@ -9,7 +9,7 @@ export class ChatService {
   stream(prompt: string, chatId: number, mode: string): Observable<string> {
   return new Observable<string>(observer => {
 
-    fetch('http://localhost:5000/api/chat', {
+    fetch('http://localhost:8000/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
